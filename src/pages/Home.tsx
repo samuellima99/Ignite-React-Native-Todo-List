@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 
 import { Header } from '../components/Header';
 import { Task, TasksList } from '../components/TasksList';
@@ -9,6 +9,15 @@ export function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
   function handleAddTask(newTaskTitle: string) {
+    const task = tasks.find((task) => task.title === newTaskTitle);
+
+    if (task) {
+      return Alert.alert(
+        'Task já cadastrada',
+        'Você não pode cadastrar uma task com o mesmo nome'
+      );
+    }
+
     setTasks([
       ...tasks,
       { id: new Date().getTime(), title: newTaskTitle, done: false },
@@ -30,9 +39,39 @@ export function Home() {
   }
 
   function handleRemoveTask(id: number) {
-    const newTasks = tasks.filter((task) => task.id !== id);
+    Alert.alert(
+      'Remover item',
+      'Tem certeza que você deseja remover esse item?',
+      [
+        {
+          text: 'Não',
+          style: 'cancel',
+        },
+        {
+          text: 'Sim',
+          style: 'destructive',
+          onPress: () => {
+            const newTasks = tasks.filter((task) => task.id !== id);
 
-    setTasks(newTasks);
+            setTasks(newTasks);
+          },
+        },
+      ]
+    );
+  }
+
+  function handleEditTask(taskId: number, taskNewTitles: string) {
+    const updatedTasks = tasks.map((task) => ({ ...task }));
+
+    const taskFound = updatedTasks.find((task) => task.id === taskId);
+
+    if (!taskFound) {
+      return;
+    }
+
+    taskFound.title = taskNewTitles;
+
+    setTasks(updatedTasks);
   }
 
   return (
@@ -45,6 +84,7 @@ export function Home() {
         tasks={tasks}
         toggleTaskDone={handleToggleTaskDone}
         removeTask={handleRemoveTask}
+        editTask={handleEditTask}
       />
     </View>
   );
